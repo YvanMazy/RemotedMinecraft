@@ -1,2 +1,3 @@
 rootProject.name = 'RemotedMinecraft'
+include 'cli'
 
