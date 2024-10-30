@@ -26,7 +26,14 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
             authentication = Auth.EMPTY;
         }
         if (processJavaPath == null) {
-            processJavaPath = Path.of(System.getProperty("java.home"));
+            final String command = ProcessHandle.current().info().command().orElse(null);
+            if (command == null || command.isBlank()) {
+                throw new IllegalArgumentException("Java path is not found!");
+            }
+            processJavaPath = Path.of(command);
+            if (!Files.isRegularFile(processJavaPath)) {
+                throw new IllegalArgumentException("Java path is not found: '" + processJavaPath + "'");
+            }
         }
         if (processJvmOptions == null) {
             processJvmOptions = "";
