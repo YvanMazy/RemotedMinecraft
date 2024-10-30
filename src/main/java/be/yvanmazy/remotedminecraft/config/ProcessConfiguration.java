@@ -1,6 +1,6 @@
 package be.yvanmazy.remotedminecraft.config;
 
-import be.yvanmazy.remotedminecraft.auth.Authentication;
+import be.yvanmazy.remotedminecraft.auth.Auth;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,11 +14,15 @@ public interface ProcessConfiguration {
         return new ProcessConfigurationImpl.Builder();
     }
 
+    // TODO: Add classpath option
+    // TODO: Add inheritIO option
+    // TODO: Add unary operator for processBuilder option
+
     @Contract(pure = true)
     @NotNull String version();
 
     @Contract(pure = true)
-    @NotNull Authentication authentication();
+    @NotNull Auth authentication();
 
     @Contract(pure = true)
     @NotNull Path processJavaPath();
@@ -38,7 +42,7 @@ public interface ProcessConfiguration {
         @NotNull Builder version(final @NotNull String version);
 
         @Contract("_ -> this")
-        @NotNull Builder authentication(final @Nullable Authentication authentication);
+        @NotNull Builder authentication(final @Nullable Auth authentication);
 
         @Contract("_ -> this")
         @NotNull Builder processJavaPath(final @Nullable Path processJavaPath);

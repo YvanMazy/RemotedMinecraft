@@ -4,9 +4,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-record TokenAuthentication(String accessToken) implements Authentication {
+record TokenAuth(String accessToken) implements Auth {
 
-    public TokenAuthentication {
+    public TokenAuth {
         Objects.requireNonNull(accessToken, "accessToken must not be null");
     }
 

@@ -1,13 +1,14 @@
 package be.yvanmazy.remotedminecraft.config;
 
-import be.yvanmazy.remotedminecraft.auth.Authentication;
+import be.yvanmazy.remotedminecraft.auth.Auth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
-record ProcessConfigurationImpl(String version, Authentication authentication, Path processJavaPath, String processJvmOptions,
+record ProcessConfigurationImpl(String version, Auth authentication, Path processJavaPath, String processJvmOptions,
                                 String processMainClass, Path processDirectory) implements ProcessConfiguration {
 
     private ProcessConfigurationImpl(final Builder builder) {
@@ -22,7 +23,7 @@ record ProcessConfigurationImpl(String version, Authentication authentication, P
     ProcessConfigurationImpl {
         Objects.requireNonNull(version, "version must not be null");
         if (authentication == null) {
-            authentication = Authentication.EMPTY;
+            authentication = Auth.EMPTY;
         }
         if (processJavaPath == null) {
             processJavaPath = Path.of(System.getProperty("java.home"));
@@ -41,7 +42,7 @@ record ProcessConfigurationImpl(String version, Authentication authentication, P
     public static class Builder implements ProcessConfiguration.Builder {
 
         private String version;
-        private Authentication authentication;
+        private Auth authentication;
         private Path processJavaPath;
         private String processJvmOptions;
         private String processMainClass;
@@ -54,7 +55,7 @@ record ProcessConfigurationImpl(String version, Authentication authentication, P
         }
 
         @Override
-        public ProcessConfiguration.@NotNull Builder authentication(final @Nullable Authentication authentication) {
+        public ProcessConfiguration.@NotNull Builder authentication(final @Nullable Auth authentication) {
             this.authentication = authentication;
             return this;
         }

@@ -2,11 +2,12 @@ package be.yvanmazy.remotedminecraft.auth;
 
 import org.jetbrains.annotations.Nullable;
 
-final class EmptyAuthentication implements Authentication {
+import java.util.Objects;
 
-    @Override
-    public @Nullable String username() {
-        return null;
+record UsernameAuth(String username) implements Auth {
+
+    public UsernameAuth {
+        Objects.requireNonNull(username, "username must not be null");
     }
 
     @Override
