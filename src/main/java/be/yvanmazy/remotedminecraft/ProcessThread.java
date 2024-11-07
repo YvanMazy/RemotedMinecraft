@@ -64,6 +64,9 @@ class ProcessThread extends Thread {
     @Override
     public void run() {
         try {
+            if (!Files.isDirectory(this.directory)) {
+                Files.createDirectories(this.directory);
+            }
             this.createLauncherProfiles();
             this.prepareVersionManifest();
             this.prepareVersionJar();
