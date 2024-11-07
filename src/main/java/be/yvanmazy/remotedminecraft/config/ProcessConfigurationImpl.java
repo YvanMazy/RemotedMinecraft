@@ -6,16 +6,19 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 
-record ProcessConfigurationImpl(String version, Auth authentication, Path processJavaPath, String processJvmOptions,
-                                String processMainClass, Path processDirectory) implements ProcessConfiguration {
+record ProcessConfigurationImpl(String version, Auth authentication, Path processJavaPath, List<String> jvmArguments,
+                                List<String> gameArguments, String processMainClass,
+                                Path processDirectory) implements ProcessConfiguration {
 
     private ProcessConfigurationImpl(final Builder builder) {
         this(builder.version,
                 builder.authentication,
                 builder.processJavaPath,
-                builder.processJvmOptions,
+                builder.jvmArguments,
+                builder.gameArguments,
                 builder.processMainClass,
                 builder.processDirectory);
     }
@@ -35,8 +38,11 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
                 throw new IllegalArgumentException("Java path is not found: '" + processJavaPath + "'");
             }
         }
-        if (processJvmOptions == null) {
-            processJvmOptions = "";
+        if (jvmArguments == null) {
+            jvmArguments = List.of();
+        }
+        if (gameArguments == null) {
+            gameArguments = List.of();
         }
         if (processMainClass == null) {
             processMainClass = "";
@@ -51,7 +57,8 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         private String version;
         private Auth authentication;
         private Path processJavaPath;
-        private String processJvmOptions;
+        private List<String> jvmArguments;
+        private List<String> gameArguments;
         private String processMainClass;
         private Path processDirectory;
 
@@ -74,8 +81,14 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         }
 
         @Override
-        public ProcessConfiguration.@NotNull Builder processJvmOptions(final @Nullable String jvmOptions) {
-            this.processJvmOptions = jvmOptions;
+        public ProcessConfiguration.@NotNull Builder jvmArguments(final @NotNull List<String> jvmArguments) {
+            this.jvmArguments = Objects.requireNonNull(jvmArguments, "jvmArguments must not be null");
+            return this;
+        }
+
+        @Override
+        public ProcessConfiguration.@NotNull Builder gameArguments(final @NotNull List<String> gameArguments) {
+            this.gameArguments = Objects.requireNonNull(gameArguments, "gameArguments must not be null");
             return this;
         }
 

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public interface ProcessConfiguration {
 
@@ -28,7 +29,10 @@ public interface ProcessConfiguration {
     @NotNull Path processJavaPath();
 
     @Contract(pure = true)
-    @NotNull String processJvmOptions();
+    @NotNull List<String> jvmArguments();
+
+    @Contract(pure = true)
+    @NotNull List<String> gameArguments();
 
     @Contract(pure = true)
     @NotNull String processMainClass();
@@ -48,7 +52,10 @@ public interface ProcessConfiguration {
         @NotNull Builder processJavaPath(final @Nullable Path processJavaPath);
 
         @Contract("_ -> this")
-        @NotNull Builder processJvmOptions(final @Nullable String jvmOptions);
+        @NotNull Builder jvmArguments(final @NotNull List<String> jvmArguments);
+
+        @Contract("_ -> this")
+        @NotNull Builder gameArguments(final @NotNull List<String> gameArguments);
 
         @Contract("_ -> this")
         @NotNull Builder processMainClass(final @Nullable String processMainClass);

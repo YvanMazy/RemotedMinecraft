@@ -83,12 +83,15 @@ class ProcessThread extends Thread {
         final List<String> commands = new ArrayList<>();
         commands.add(this.configuration.processJavaPath().toString());
         this.fillLines(commands, this.versionManifest.arguments().getJvmLines());
+        commands.add("-XX:+EnableDynamicAgentLoading"); // TODO: Make an option for add this
+        commands.addAll(this.configuration.jvmArguments());
         String mainClass = this.configuration.processMainClass();
         if (mainClass.isBlank()) {
             mainClass = this.versionManifest.mainClass();
         }
         commands.add(mainClass);
         this.fillLines(commands, this.versionManifest.arguments().getGameLines());
+        commands.addAll(this.configuration.gameArguments());
 
         return new ProcessBuilder(commands).directory(this.directory.toFile()).inheritIO().start();
     }
