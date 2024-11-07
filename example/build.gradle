@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.5'
+    id 'xyz.wagyourtail.unimined' version '1.3.9'
+}
+
+group = 'be.yvanmazy'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":")
+    implementation 'org.slf4j:slf4j-simple:2.0.16'
+}
+
+unimined.minecraft {
+    version "1.21.3"
+
+    mappings {
+        mojmap()
+    }
+    jarMod {
+    }
+}
+
+shadowJar {
+    manifest {
+        attributes(
+                'Main-Class': 'be.yvanmazy.remotedminecraft.example.Main',
+                'Agent-Class': 'be.yvanmazy.remotedminecraft.example.agent.AgentMain'
+        )
+    }
+}
+
+remapJar {
+    inputFile = shadowJar.archiveFile
+}
+
+tasks.remapJar {
+    dependsOn tasks.shadowJar
+}
