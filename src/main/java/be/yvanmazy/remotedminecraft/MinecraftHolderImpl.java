@@ -2,6 +2,7 @@ package be.yvanmazy.remotedminecraft;
 
 import be.yvanmazy.remotedminecraft.config.ProcessConfiguration;
 import be.yvanmazy.remotedminecraft.controller.MinecraftController;
+import be.yvanmazy.remotedminecraft.controller.agent.RemotedAgent;
 import be.yvanmazy.remotedminecraft.state.MinecraftState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 final class MinecraftHolderImpl implements MinecraftHolder {
 
     private final ProcessConfiguration configuration;
-    private final CompletableFuture<MinecraftController> controllerFuture = new CompletableFuture<>();
+    private final CompletableFuture<MinecraftHolder> readyFuture = new CompletableFuture<>();
 
     private MinecraftState state = MinecraftState.STARTING;
     private Process process;
@@ -22,16 +23,13 @@ final class MinecraftHolderImpl implements MinecraftHolder {
     }
 
     @Override
-    public @NotNull CompletableFuture<MinecraftController> getControllerAsynchronously() {
-        return this.controllerFuture;
+    public @NotNull <T extends RemotedAgent> MinecraftController<T> newController() {
+        return MinecraftController.build(this.process);
     }
 
     @Override
-    public @Nullable MinecraftController getController() {
-        if (this.controllerFuture.isDone() && !this.controllerFuture.isCompletedExceptionally() && !this.controllerFuture.isCancelled()) {
-            return this.controllerFuture.getNow(null);
-        }
-        return null;
+    public @NotNull CompletableFuture<MinecraftHolder> getReadyFuture() {
+        return this.readyFuture;
     }
 
     @Override
@@ -52,19 +50,15 @@ final class MinecraftHolderImpl implements MinecraftHolder {
     }
 
     void complete(final @NotNull Process process) {
-        this.process = process;
+        this.process = Objects.requireNonNull(process, "process must not be null");
         this.state = MinecraftState.STARTED;
-        process.onExit().whenComplete((p, throwable) -> {
-            this.state = MinecraftState.CLOSED;
-            if (!this.controllerFuture.isDone()) {
-                this.controllerFuture.cancel(true);
-            }
-        });
+        this.readyFuture.complete(this);
+        process.onExit().whenComplete((p, throwable) -> this.state = MinecraftState.CLOSED);
     }
 
     void completeExceptionally(final @NotNull Throwable throwable) {
         this.state = MinecraftState.CLOSED;
-        this.controllerFuture.completeExceptionally(throwable);
+        this.readyFuture.completeExceptionally(throwable);
     }
 
 }

@@ -2,6 +2,7 @@ package be.yvanmazy.remotedminecraft;
 
 import be.yvanmazy.remotedminecraft.config.ProcessConfiguration;
 import be.yvanmazy.remotedminecraft.controller.MinecraftController;
+import be.yvanmazy.remotedminecraft.controller.agent.RemotedAgent;
 import be.yvanmazy.remotedminecraft.state.MinecraftState;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -21,10 +22,10 @@ public interface MinecraftHolder {
     @Nullable Process getProcess();
 
     @Contract(pure = true)
-    @NotNull CompletableFuture<MinecraftController> getControllerAsynchronously();
+    @NotNull CompletableFuture<MinecraftHolder> getReadyFuture();
 
     @Contract(pure = true)
-    @Nullable MinecraftController getController();
+    @NotNull <T extends RemotedAgent> MinecraftController<T> newController();
 
     @Contract(pure = true)
     default boolean isStarted() {
