@@ -2,6 +2,7 @@ package be.yvanmazy.remotedminecraft;
 
 import be.yvanmazy.remotedminecraft.auth.Auth;
 import be.yvanmazy.remotedminecraft.config.ProcessConfiguration;
+import be.yvanmazy.remotedminecraft.platform.OsType;
 import be.yvanmazy.remotedminecraft.util.FileUtil;
 import be.yvanmazy.remotedminecraft.util.HashUtil;
 import be.yvanmazy.remotedminecraft.util.JsonUtil;
@@ -103,7 +104,7 @@ class ProcessThread extends Thread {
         for (String line : lines) {
             line = this.replacePlaceholder(line);
             if (line.isBlank() && commands.size() > 1) {
-                commands.remove(commands.size() - 1);
+                commands.removeLast();
                 continue;
             }
             commands.add(line);
@@ -263,7 +264,7 @@ class ProcessThread extends Thread {
         this.placeholderMap.put("classpath",
                 Stream.concat(this.libraries.stream(), Stream.of(this.jarPath))
                         .map(FileUtil::toLauncherString)
-                        .collect(Collectors.joining(";")));
+                        .collect(Collectors.joining(OsType.getCurrentType() == OsType.LINUX ? ":" : ";")));
     }
 
     private static boolean prepareFile(final @NotNull Path path, final @NotNull String url, final @Nullable String sha1) {
