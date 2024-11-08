@@ -7,6 +7,12 @@ plugins {
 group = 'be.yvanmazy'
 version = '1.0'
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 repositories {
     mavenCentral()
 }

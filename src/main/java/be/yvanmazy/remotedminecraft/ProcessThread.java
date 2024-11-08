@@ -104,7 +104,7 @@ class ProcessThread extends Thread {
         for (String line : lines) {
             line = this.replacePlaceholder(line);
             if (line.isBlank() && commands.size() > 1) {
-                commands.removeLast();
+                commands.remove(commands.size() - 1);
                 continue;
             }
             commands.add(line);
