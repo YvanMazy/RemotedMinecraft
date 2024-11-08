@@ -6,12 +6,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 record ProcessConfigurationImpl(String version, Auth authentication, Path processJavaPath, List<String> jvmArguments,
-                                List<String> gameArguments, String processMainClass,
-                                Path processDirectory) implements ProcessConfiguration {
+                                List<String> gameArguments, String processMainClass, Path processDirectory,
+                                boolean independent) implements ProcessConfiguration {
 
     private ProcessConfigurationImpl(final Builder builder) {
         this(builder.version,
@@ -20,7 +21,8 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
                 builder.jvmArguments,
                 builder.gameArguments,
                 builder.processMainClass,
-                builder.processDirectory);
+                builder.processDirectory,
+                builder.independent);
     }
 
     ProcessConfigurationImpl {
@@ -52,7 +54,7 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         }
     }
 
-    public static class Builder implements ProcessConfiguration.Builder {
+    static class Builder implements ProcessConfiguration.Builder {
 
         private String version;
         private Auth authentication;
@@ -61,6 +63,7 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         private List<String> gameArguments;
         private String processMainClass;
         private Path processDirectory;
+        private boolean independent;
 
         @Override
         public ProcessConfiguration.@NotNull Builder version(final @NotNull String version) {
@@ -101,6 +104,12 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         @Override
         public ProcessConfiguration.@NotNull Builder processDirectory(final @Nullable Path processDirectory) {
             this.processDirectory = processDirectory;
+            return this;
+        }
+
+        @Override
+        public ProcessConfiguration.@NotNull Builder independent(final boolean independent) {
+            this.independent = independent;
             return this;
         }
 

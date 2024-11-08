@@ -40,6 +40,9 @@ public interface ProcessConfiguration {
     @Contract(pure = true)
     @NotNull Path processDirectory();
 
+    @Contract(pure = true)
+    boolean independent();
+
     interface Builder {
 
         @Contract("_ -> this")
@@ -62,6 +65,14 @@ public interface ProcessConfiguration {
 
         @Contract("_ -> this")
         @NotNull Builder processDirectory(final @Nullable Path processDirectory);
+
+        @Contract("-> this")
+        default @NotNull Builder independent() {
+            return this.independent(true);
+        }
+
+        @Contract("_ -> this")
+        @NotNull Builder independent(final boolean independent);
 
         @Contract("-> new")
         @NotNull ProcessConfiguration build();

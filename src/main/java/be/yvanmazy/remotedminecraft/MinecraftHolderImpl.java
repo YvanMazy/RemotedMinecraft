@@ -51,9 +51,12 @@ final class MinecraftHolderImpl implements MinecraftHolder {
 
     void complete(final @NotNull Process process) {
         this.process = Objects.requireNonNull(process, "process must not be null");
+        if (!this.configuration.independent()) {
+            ProcessManager.getInstance().register(process);
+        }
         this.state = MinecraftState.STARTED;
-        this.readyFuture.complete(this);
         process.onExit().whenComplete((p, throwable) -> this.state = MinecraftState.CLOSED);
+        this.readyFuture.complete(this);
     }
 
     void completeExceptionally(final @NotNull Throwable throwable) {
