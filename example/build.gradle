@@ -30,7 +30,8 @@ shadowJar {
     manifest {
         attributes(
                 'Main-Class': 'be.yvanmazy.remotedminecraft.example.Main',
-                'Agent-Class': 'be.yvanmazy.remotedminecraft.example.agent.AgentMain'
+                'Agent-Class': 'be.yvanmazy.remotedminecraft.example.agent.AgentMain',
+                'Premain-Class': 'be.yvanmazy.remotedminecraft.example.agent.AgentMain'
         )
     }
 }
