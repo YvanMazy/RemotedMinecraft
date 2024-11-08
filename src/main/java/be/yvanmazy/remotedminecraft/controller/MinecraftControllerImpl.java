@@ -1,8 +1,10 @@
 package be.yvanmazy.remotedminecraft.controller;
 
 import be.yvanmazy.remotedminecraft.controller.agent.RemotedAgent;
+import be.yvanmazy.remotedminecraft.controller.exception.AgentConnectException;
 import be.yvanmazy.remotedminecraft.controller.exception.AgentLoadingException;
 import be.yvanmazy.remotedminecraft.controller.exception.AgentNotLoadedException;
+import be.yvanmazy.remotedminecraft.util.FileUtil;
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
@@ -10,7 +12,6 @@ import com.sun.tools.attach.VirtualMachine;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.rmi.NotBoundException;
@@ -31,8 +32,36 @@ final class MinecraftControllerImpl<T extends RemotedAgent> implements Minecraft
 
     @Override
     public void loadAgent(final @NotNull String id, final int port) throws AgentLoadingException {
-        this.attachAndLoad(port);
-        this.connectRemote(id, port);
+        try {
+            final VirtualMachine machine = VirtualMachine.attach(String.valueOf(this.process.pid()));
+
+            final Path path = FileUtil.getSelf();
+            if (Files.notExists(path)) {
+                throw new AgentLoadingException("Agent file not found!");
+            }
+            machine.loadAgent(path.toAbsolutePath().toString(), String.valueOf(port));
+
+            machine.detach();
+        } catch (final AttachNotSupportedException | IOException e) {
+            throw new AgentLoadingException("Failed to attach process", e);
+        } catch (final AgentLoadException | AgentInitializationException e) {
+            throw new AgentLoadingException("Failed to load agent", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public boolean connect(final @NotNull String id, final int port) throws AgentConnectException {
+        try {
+            this.remotedAgent = (T) LocateRegistry.getRegistry(port).lookup(id);
+
+            if (this.remotedAgent != null && this.remotedAgent.isLoaded()) {
+                return this.loaded = true;
+            }
+        } catch (final RemoteException | NotBoundException e) {
+            throw new AgentConnectException("Failed to connect", e);
+        }
+        return false;
     }
 
     @Override
@@ -54,38 +83,6 @@ final class MinecraftControllerImpl<T extends RemotedAgent> implements Minecraft
     public T agent() {
         this.checkLoaded();
         return this.remotedAgent;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void connectRemote(final String id, final int port) throws AgentLoadingException {
-        try {
-            this.remotedAgent = (T) LocateRegistry.getRegistry(port).lookup(id);
-
-            if (this.remotedAgent != null && this.remotedAgent.isLoaded()) {
-                this.loaded = true;
-            }
-        } catch (final RemoteException | NotBoundException e) {
-            throw new AgentLoadingException("Failed to connect to agent", e);
-        }
-    }
-
-    private void attachAndLoad(final int port) throws AgentLoadingException {
-        try {
-            final VirtualMachine machine = VirtualMachine.attach(String.valueOf(this.process.pid()));
-
-            final URI uri = URI.create(MinecraftControllerImpl.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm());
-            final Path path = Path.of(uri);
-            if (Files.notExists(path)) {
-                throw new AgentLoadingException("Agent file not found!");
-            }
-            machine.loadAgent(path.toAbsolutePath().toString(), String.valueOf(port));
-
-            machine.detach();
-        } catch (final AttachNotSupportedException | IOException e) {
-            throw new AgentLoadingException("Failed to attach process", e);
-        } catch (final AgentLoadException | AgentInitializationException e) {
-            throw new AgentLoadingException("Failed to load agent", e);
-        }
     }
 
     @Override

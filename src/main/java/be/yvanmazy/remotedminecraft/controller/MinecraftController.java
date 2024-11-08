@@ -1,6 +1,7 @@
 package be.yvanmazy.remotedminecraft.controller;
 
 import be.yvanmazy.remotedminecraft.controller.agent.RemotedAgent;
+import be.yvanmazy.remotedminecraft.controller.exception.AgentConnectException;
 import be.yvanmazy.remotedminecraft.controller.exception.AgentLoadingException;
 import be.yvanmazy.remotedminecraft.controller.exception.AgentNotLoadedException;
 import org.jetbrains.annotations.Contract;
@@ -8,7 +9,8 @@ import org.jetbrains.annotations.NotNull;
 
 public interface MinecraftController<T extends RemotedAgent> {
 
-    static <T extends RemotedAgent> MinecraftController<T> build(final @NotNull Process process) {
+    @Contract("_ -> new")
+    static <T extends RemotedAgent> @NotNull MinecraftController<T> build(final @NotNull Process process) {
         return new MinecraftControllerImpl<>(process);
     }
 
@@ -17,6 +19,8 @@ public interface MinecraftController<T extends RemotedAgent> {
     }
 
     void loadAgent(final @NotNull String id, final int port) throws AgentLoadingException;
+
+    boolean connect(final @NotNull String id, final int port) throws AgentConnectException;
 
     @Contract(pure = true)
     boolean isLoaded();
