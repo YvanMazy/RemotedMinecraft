@@ -40,12 +40,8 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
                 throw new IllegalArgumentException("Java path is not found: '" + processJavaPath + "'");
             }
         }
-        if (jvmArguments == null) {
-            jvmArguments = List.of();
-        }
-        if (gameArguments == null) {
-            gameArguments = List.of();
-        }
+        jvmArguments = jvmArguments != null ? List.copyOf(jvmArguments) : List.of();
+        gameArguments = gameArguments != null ? List.copyOf(gameArguments) : List.of();
         if (processMainClass == null) {
             processMainClass = "";
         }
