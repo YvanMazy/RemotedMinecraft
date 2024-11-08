@@ -59,7 +59,7 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         private String version;
         private Auth authentication;
         private Path processJavaPath;
-        private List<String> jvmArguments;
+        private final List<String> jvmArguments = new ArrayList<>();
         private List<String> gameArguments;
         private String processMainClass;
         private Path processDirectory;
@@ -85,13 +85,20 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
 
         @Override
         public ProcessConfiguration.@NotNull Builder jvmArguments(final @NotNull List<String> jvmArguments) {
-            this.jvmArguments = Objects.requireNonNull(jvmArguments, "jvmArguments must not be null");
+            this.jvmArguments.clear();
+            this.jvmArguments.addAll(Objects.requireNonNull(jvmArguments, "jvmArguments must not be null"));
             return this;
         }
 
         @Override
         public ProcessConfiguration.@NotNull Builder gameArguments(final @NotNull List<String> gameArguments) {
             this.gameArguments = Objects.requireNonNull(gameArguments, "gameArguments must not be null");
+            return this;
+        }
+
+        @Override
+        public ProcessConfiguration.@NotNull Builder jvmAgentArg(final @NotNull String path, final @Nullable String arg) {
+            this.jvmArguments.add("-javaagent:" + path + (arg != null ? "=" + arg : ""));
             return this;
         }
 

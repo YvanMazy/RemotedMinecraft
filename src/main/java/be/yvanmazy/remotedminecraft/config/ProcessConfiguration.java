@@ -1,6 +1,7 @@
 package be.yvanmazy.remotedminecraft.config;
 
 import be.yvanmazy.remotedminecraft.auth.Auth;
+import be.yvanmazy.remotedminecraft.util.FileUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +57,19 @@ public interface ProcessConfiguration {
 
         @Contract("_ -> this")
         @NotNull Builder jvmArguments(final @NotNull List<String> jvmArguments);
+
+        @Contract("_ -> this")
+        default @NotNull Builder jvmAgentArg(final int port) {
+            return this.jvmAgentArg(FileUtil.getSelf().toString(), String.valueOf(port));
+        }
+
+        @Contract("_ -> this")
+        default @NotNull Builder jvmAgentArg(final @Nullable String arg) {
+            return this.jvmAgentArg(FileUtil.getSelf().toString(), arg);
+        }
+
+        @Contract("_, _ -> this")
+        @NotNull Builder jvmAgentArg(final @NotNull String path, final @Nullable String arg);
 
         @Contract("_ -> this")
         @NotNull Builder gameArguments(final @NotNull List<String> gameArguments);

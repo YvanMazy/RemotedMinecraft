@@ -3,6 +3,7 @@ package be.yvanmazy.remotedminecraft.util;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Path;
 
 public final class FileUtil {
@@ -13,6 +14,10 @@ public final class FileUtil {
 
     public static @NotNull String toLauncherString(final @NotNull Path path) {
         return path.toAbsolutePath().toString().replace(File.separatorChar, '/');
+    }
+
+    public static @NotNull Path getSelf() {
+        return Path.of(URI.create(FileUtil.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm()));
     }
 
 }
