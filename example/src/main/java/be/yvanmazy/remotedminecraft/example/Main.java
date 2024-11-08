@@ -3,6 +3,7 @@ package be.yvanmazy.remotedminecraft.example;
 import be.yvanmazy.remotedminecraft.RemotedMinecraft;
 import be.yvanmazy.remotedminecraft.config.ProcessConfiguration;
 import be.yvanmazy.remotedminecraft.controller.MinecraftController;
+import be.yvanmazy.remotedminecraft.controller.exception.AgentConnectException;
 import be.yvanmazy.remotedminecraft.controller.exception.AgentLoadingException;
 import be.yvanmazy.remotedminecraft.example.agent.MyCustomAgent;
 import org.slf4j.Logger;
@@ -26,16 +27,19 @@ public class Main {
             dir = args[0];
         }
 
+        LOGGER.info("Starting...");
         RemotedMinecraft.run(ProcessConfiguration.newBuilder()
                 .version("1.21.3")
                 .processDirectory(Path.of(dir))
                 .gameArguments(List.of("--quickPlayMultiplayer", "localhost:25565"))
+                .jvmAgentArg(1099)
                 .build()).getReadyFuture().thenAccept(holder -> {
+            LOGGER.info("Started! Loading agent...");
             final MinecraftController<MyCustomAgent> controller = holder.newController();
             try {
-                controller.loadAgent(MyCustomAgent.ID);
-            } catch (final AgentLoadingException e) {
-                LOGGER.error("Failed to load agent", e);
+                controller.connect(MyCustomAgent.ID, 1099);
+            } catch (final AgentConnectException e) {
+                LOGGER.error("Failed to connect agent", e);
                 return;
             }
             try {
@@ -45,6 +49,8 @@ public class Main {
                 LOGGER.error("Failed to await agent", e);
             } catch (final RemoteException e) {
                 LOGGER.error("Failed to get fps", e);
+            } finally {
+                controller.process().destroy();
             }
         });
     }
