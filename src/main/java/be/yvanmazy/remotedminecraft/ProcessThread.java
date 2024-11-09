@@ -213,7 +213,9 @@ class ProcessThread extends Thread {
                 throw new IllegalStateException("Failed to create version directory", e);
             }
         }
-        downloadJarFile(version.url(), versionPath, "Failed to download version");
+        if (Files.notExists(versionPath)) {
+            downloadJarFile(version.url(), versionPath, "Failed to download version");
+        }
     }
 
     private void prepareVersionJar() {
