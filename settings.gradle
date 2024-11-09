@@ -16,4 +16,7 @@ pluginManagement {
 }
 
 rootProject.name = 'RemotedMinecraft'
-include 'example'
+
+if (System.getenv("JITPACK") == null) {
+    include 'example'
+}
