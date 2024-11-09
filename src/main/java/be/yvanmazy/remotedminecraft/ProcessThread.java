@@ -121,7 +121,14 @@ class ProcessThread extends Thread {
         this.fillLines(commands, this.versionManifest.arguments().getGameLines());
         commands.addAll(this.configuration.gameArguments());
 
-        return new ProcessBuilder(commands).directory(this.directory.toFile()).inheritIO().start();
+        ProcessBuilder builder = new ProcessBuilder(commands).directory(this.directory.toFile());
+        if (this.configuration.inheritIO()) {
+            builder.inheritIO();
+        }
+        if (this.configuration.processOperator() != null) {
+            builder = this.configuration.processOperator().apply(builder);
+        }
+        return builder.start();
     }
 
     private void fillLines(final List<String> commands, final List<String> lines) {

@@ -32,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 public interface ProcessConfiguration {
 
@@ -41,8 +42,6 @@ public interface ProcessConfiguration {
     }
 
     // TODO: Add classpath option
-    // TODO: Add inheritIO option
-    // TODO: Add unary operator for processBuilder option
 
     @Contract(pure = true)
     @NotNull String version();
@@ -67,6 +66,12 @@ public interface ProcessConfiguration {
 
     @Contract(pure = true)
     boolean independent();
+
+    @Contract(pure = true)
+    boolean inheritIO();
+
+    @Contract(pure = true)
+    UnaryOperator<ProcessBuilder> processOperator();
 
     interface Builder {
 
@@ -111,6 +116,12 @@ public interface ProcessConfiguration {
 
         @Contract("_ -> this")
         @NotNull Builder independent(final boolean independent);
+
+        @Contract("_ -> this")
+        @NotNull Builder inheritIO(final boolean inheritIO);
+
+        @Contract("_ -> this")
+        @NotNull Builder processOperator(final @Nullable UnaryOperator<ProcessBuilder> operator);
 
         @Contract("-> new")
         @NotNull ProcessConfiguration build();

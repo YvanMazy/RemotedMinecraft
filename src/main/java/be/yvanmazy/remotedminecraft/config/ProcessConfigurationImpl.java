@@ -33,10 +33,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 record ProcessConfigurationImpl(String version, Auth authentication, Path processJavaPath, List<String> jvmArguments,
-                                List<String> gameArguments, String processMainClass, Path processDirectory,
-                                boolean independent) implements ProcessConfiguration {
+                                List<String> gameArguments, String processMainClass, Path processDirectory, boolean independent,
+                                boolean inheritIO, UnaryOperator<ProcessBuilder> processOperator) implements ProcessConfiguration {
 
     private ProcessConfigurationImpl(final Builder builder) {
         this(builder.version,
@@ -46,7 +47,9 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
                 builder.gameArguments,
                 builder.processMainClass,
                 builder.processDirectory,
-                builder.independent);
+                builder.independent,
+                builder.inheritIO,
+                builder.processOperator);
     }
 
     ProcessConfigurationImpl {
@@ -84,6 +87,8 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         private String processMainClass;
         private Path processDirectory;
         private boolean independent;
+        private boolean inheritIO = true;
+        private UnaryOperator<ProcessBuilder> processOperator;
 
         @Override
         public ProcessConfiguration.@NotNull Builder version(final @NotNull String version) {
@@ -137,6 +142,18 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         @Override
         public ProcessConfiguration.@NotNull Builder independent(final boolean independent) {
             this.independent = independent;
+            return this;
+        }
+
+        @Override
+        public ProcessConfiguration.@NotNull Builder inheritIO(final boolean inheritIO) {
+            this.inheritIO = inheritIO;
+            return this;
+        }
+
+        @Override
+        public ProcessConfiguration.@NotNull Builder processOperator(final @Nullable UnaryOperator<ProcessBuilder> operator) {
+            this.processOperator = operator;
             return this;
         }
 
