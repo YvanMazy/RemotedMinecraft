@@ -51,6 +51,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -58,6 +59,7 @@ import java.util.stream.Stream;
 class ProcessThread extends Thread {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessThread.class);
+    private static final AtomicInteger ID = new AtomicInteger();
 
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(\\w+)}");
     private static final URL VERSIONS_URL;
@@ -81,6 +83,7 @@ class ProcessThread extends Thread {
     private Map<String, String> placeholderMap;
 
     ProcessThread(final @NotNull MinecraftHolderImpl holder) {
+        super("RemotedMinecraft Process Thread#" + ID.incrementAndGet());
         this.holder = Objects.requireNonNull(holder, "holder must not be null");
         this.configuration = holder.getConfiguration();
         this.directory = this.configuration.processDirectory();
