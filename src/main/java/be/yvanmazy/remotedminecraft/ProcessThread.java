@@ -298,7 +298,8 @@ class ProcessThread extends Thread {
         this.placeholderMap.put("natives_directory", FileUtil.toLauncherString(this.directory.resolve("natives")));
         this.placeholderMap.put("assets_index_name", this.versionManifest.assets());
         this.placeholderMap.put("classpath",
-                Stream.concat(this.libraries.stream(), Stream.of(this.jarPath))
+                Stream.of(this.libraries.stream(), Stream.of(this.jarPath), this.configuration.classpath().stream())
+                        .reduce(Stream.empty(), Stream::concat)
                         .map(FileUtil::toLauncherString)
                         .collect(Collectors.joining(OsType.getCurrentType() == OsType.LINUX ? ":" : ";")));
     }

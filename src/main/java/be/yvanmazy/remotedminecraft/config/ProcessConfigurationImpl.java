@@ -36,8 +36,9 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 record ProcessConfigurationImpl(String version, Auth authentication, Path processJavaPath, List<String> jvmArguments,
-                                List<String> gameArguments, String processMainClass, Path processDirectory, boolean independent,
-                                boolean inheritIO, UnaryOperator<ProcessBuilder> processOperator) implements ProcessConfiguration {
+                                List<String> gameArguments, List<Path> classpath, String processMainClass, Path processDirectory,
+                                boolean independent, boolean inheritIO,
+                                UnaryOperator<ProcessBuilder> processOperator) implements ProcessConfiguration {
 
     private ProcessConfigurationImpl(final Builder builder) {
         this(builder.version,
@@ -45,6 +46,7 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
                 builder.processJavaPath,
                 builder.jvmArguments,
                 builder.gameArguments,
+                builder.classpath,
                 builder.processMainClass,
                 builder.processDirectory,
                 builder.independent,
@@ -69,6 +71,7 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         }
         jvmArguments = jvmArguments != null ? List.copyOf(jvmArguments) : List.of();
         gameArguments = gameArguments != null ? List.copyOf(gameArguments) : List.of();
+        classpath = classpath != null ? List.copyOf(classpath) : List.of();
         if (processMainClass == null) {
             processMainClass = "";
         }
@@ -84,6 +87,7 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         private Path processJavaPath;
         private final List<String> jvmArguments = new ArrayList<>();
         private List<String> gameArguments;
+        private List<Path> classpath;
         private String processMainClass;
         private Path processDirectory;
         private boolean independent;
@@ -118,6 +122,12 @@ record ProcessConfigurationImpl(String version, Auth authentication, Path proces
         @Override
         public ProcessConfiguration.@NotNull Builder gameArguments(final @NotNull List<String> gameArguments) {
             this.gameArguments = Objects.requireNonNull(gameArguments, "gameArguments must not be null");
+            return this;
+        }
+
+        @Override
+        public ProcessConfiguration.@NotNull Builder classpath(final @NotNull List<Path> classpath) {
+            this.classpath = Objects.requireNonNull(classpath, "classpath must not be null");
             return this;
         }
 

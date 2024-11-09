@@ -41,8 +41,6 @@ public interface ProcessConfiguration {
         return new ProcessConfigurationImpl.Builder();
     }
 
-    // TODO: Add classpath option
-
     @Contract(pure = true)
     @NotNull String version();
 
@@ -57,6 +55,9 @@ public interface ProcessConfiguration {
 
     @Contract(pure = true)
     @NotNull List<String> gameArguments();
+
+    @Contract(pure = true)
+    @NotNull List<Path> classpath();
 
     @Contract(pure = true)
     @NotNull String processMainClass();
@@ -102,6 +103,9 @@ public interface ProcessConfiguration {
 
         @Contract("_ -> this")
         @NotNull Builder gameArguments(final @NotNull List<String> gameArguments);
+
+        @Contract("_ -> this")
+        @NotNull Builder classpath(final @NotNull List<Path> classpath);
 
         @Contract("_ -> this")
         @NotNull Builder processMainClass(final @Nullable String processMainClass);
