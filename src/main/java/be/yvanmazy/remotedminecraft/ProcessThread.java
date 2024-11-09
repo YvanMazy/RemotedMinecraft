@@ -301,7 +301,7 @@ class ProcessThread extends Thread {
                 Stream.of(this.libraries.stream(), Stream.of(this.jarPath), this.configuration.classpath().stream())
                         .reduce(Stream.empty(), Stream::concat)
                         .map(FileUtil::toLauncherString)
-                        .collect(Collectors.joining(OsType.getCurrentType() == OsType.LINUX ? ":" : ";")));
+                        .collect(Collectors.joining(OsType.getCurrentType() == OsType.WINDOWS ? ";" : ":")));
     }
 
     private static boolean prepareFile(final @NotNull Path path, final @NotNull String url, final @Nullable String sha1) {
