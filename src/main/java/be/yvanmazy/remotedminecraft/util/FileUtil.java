@@ -27,7 +27,10 @@ package be.yvanmazy.remotedminecraft.util;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class FileUtil {
@@ -42,6 +45,26 @@ public final class FileUtil {
 
     public static @NotNull Path getSelf(final Class<?> clazz) {
         return Path.of(URI.create(clazz.getProtectionDomain().getCodeSource().getLocation().toExternalForm()));
+    }
+
+    public static @NotNull Path copyResource(final @NotNull String resource) throws IOException {
+        return copyResource(StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass(), resource);
+    }
+
+    public static @NotNull Path copyResource(final @NotNull Class<?> clazz, final @NotNull String resource) throws IOException {
+        final Path path = getSelf(clazz).resolveSibling(resource);
+        if (Files.notExists(path)) {
+            copyResource(clazz, path, resource);
+        }
+        return path;
+    }
+
+    public static void copyResource(final Class<?> clazz, final @NotNull Path outPath, final @NotNull String resource) throws IOException {
+        final InputStream in = clazz.getClassLoader().getResourceAsStream(resource);
+        if (in == null) {
+            throw new IOException("Resource not found: " + resource);
+        }
+        Files.copy(in, outPath);
     }
 
 }
