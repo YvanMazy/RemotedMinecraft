@@ -59,7 +59,7 @@ final class MinecraftControllerImpl<T extends RemotedAgent> implements Minecraft
         try {
             final VirtualMachine machine = VirtualMachine.attach(String.valueOf(this.process.pid()));
 
-            final Path path = FileUtil.getSelf();
+            final Path path = FileUtil.getSelf(StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass());
             if (Files.notExists(path)) {
                 throw new AgentLoadingException("Agent file not found!");
             }

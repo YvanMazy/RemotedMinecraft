@@ -40,8 +40,8 @@ public final class FileUtil {
         return path.toAbsolutePath().toString().replace(File.separatorChar, '/');
     }
 
-    public static @NotNull Path getSelf() {
-        return Path.of(URI.create(FileUtil.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm()));
+    public static @NotNull Path getSelf(final Class<?> clazz) {
+        return Path.of(URI.create(clazz.getProtectionDomain().getCodeSource().getLocation().toExternalForm()));
     }
 
 }

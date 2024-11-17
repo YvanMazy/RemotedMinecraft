@@ -90,12 +90,13 @@ public interface ProcessConfiguration {
 
         @Contract("_ -> this")
         default @NotNull Builder jvmAgentArg(final int port) {
-            return this.jvmAgentArg(FileUtil.getSelf().toString(), String.valueOf(port));
+            return this.jvmAgentArg(FileUtil.getSelf(StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass())
+                    .toString(), String.valueOf(port));
         }
 
-        @Contract("_ -> this")
-        default @NotNull Builder jvmAgentArg(final @Nullable String arg) {
-            return this.jvmAgentArg(FileUtil.getSelf().toString(), arg);
+        @Contract("_, _ -> this")
+        default @NotNull Builder jvmAgentArg(final @NotNull String path, final int port) {
+            return this.jvmAgentArg(path, String.valueOf(port));
         }
 
         @Contract("_, _ -> this")
