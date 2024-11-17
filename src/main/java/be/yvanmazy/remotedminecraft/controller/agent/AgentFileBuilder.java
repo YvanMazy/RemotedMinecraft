@@ -61,6 +61,11 @@ public final class AgentFileBuilder {
         return this;
     }
 
+    @Contract("-> this")
+    public @NotNull AgentFileBuilder addRemotedAgentClasses() {
+        return this.addClasses(RemotedAgent.class, RemotedAgents.class, RemotedAgents.RemoteSupplier.class);
+    }
+
     @Contract("-> new")
     public @NotNull Path buildUnchecked() {
         try {
