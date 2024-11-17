@@ -29,7 +29,7 @@ import net.minecraft.client.Minecraft;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-final class MyCustomAgentImpl extends UnicastRemoteObject implements MyCustomAgent {
+public final class MyCustomAgentImpl extends UnicastRemoteObject implements MyCustomAgent {
 
     MyCustomAgentImpl() throws RemoteException {
         super();
