@@ -30,4 +30,8 @@ public final class AgentConnectException extends Exception {
         super(message, cause);
     }
 
+    public AgentConnectException(final String message) {
+        super(message);
+    }
+
 }

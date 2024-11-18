@@ -77,10 +77,10 @@ final class MinecraftControllerImpl<T extends RemotedAgent> implements Minecraft
     @Override
     public boolean connect(final @NotNull String id, final int port) throws AgentConnectException {
         try {
-            this.remotedAgent = (T) LocateRegistry.getRegistry(port).lookup(id);
+            final T agent = (T) LocateRegistry.getRegistry(port).lookup(id);
 
-            if (this.remotedAgent != null && this.remotedAgent.isLoaded()) {
-                return this.loaded = true;
+            if (agent != null) {
+                return this.loaded = (this.remotedAgent = agent).isLoaded();
             }
         } catch (final RemoteException | NotBoundException e) {
             throw new AgentConnectException("Failed to connect", e);

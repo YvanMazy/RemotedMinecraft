@@ -31,6 +31,7 @@ import be.yvanmazy.remotedminecraft.controller.MinecraftController;
 import be.yvanmazy.remotedminecraft.controller.agent.AgentFileBuilder;
 import be.yvanmazy.remotedminecraft.controller.exception.AgentConnectException;
 import be.yvanmazy.remotedminecraft.controller.exception.AgentLoadingException;
+import be.yvanmazy.remotedminecraft.controller.exception.AgentNotLoadedException;
 import be.yvanmazy.remotedminecraft.example.agent.AgentMain;
 import be.yvanmazy.remotedminecraft.example.agent.MyCustomAgent;
 import be.yvanmazy.remotedminecraft.example.agent.MyCustomAgentImpl;
@@ -40,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -98,7 +98,10 @@ public class Main {
         // Creating a new controller
         final MinecraftController<MyCustomAgent> controller = holder.newController();
         try {
-            controller.connect(MyCustomAgent.ID, AGENT_PORT);
+            if (!controller.connect(MyCustomAgent.ID, AGENT_PORT, 5L, TimeUnit.MILLISECONDS, 1L)) {
+                LOGGER.error("Failed to connect agent");
+                return;
+            }
         } catch (final AgentConnectException e) {
             LOGGER.error("Failed to connect agent", e);
             return;
@@ -110,9 +113,11 @@ public class Main {
             Thread.sleep(5_000L);
             // Get Game FPS
             LOGGER.info("FPS: {}", agent.getFps());
+        } catch (final AgentNotLoadedException e) {
+            LOGGER.error("Agent is not loaded", e);
         } catch (final AgentLoadingException | InterruptedException e) {
             LOGGER.error("Failed to await agent", e);
-        } catch (final RemoteException e) {
+        } catch (final Exception e) {
             LOGGER.error("Failed to get fps", e);
         } finally {
             // Destroy the process
