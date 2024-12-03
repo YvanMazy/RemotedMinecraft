@@ -89,13 +89,19 @@ public interface MinecraftController<T extends RemotedAgent> {
     T agent();
 
     default @NotNull T awaitReady() throws AgentLoadingException, InterruptedException {
-        return this.awaitReady(50L);
+        return this.awaitReady(50L, -1L, TimeUnit.SECONDS);
     }
 
     @SuppressWarnings("BusyWait")
-    default @NotNull T awaitReady(final long checkInterval) throws AgentLoadingException, InterruptedException {
+    default @NotNull T awaitReady(final long checkInterval,
+                                  final long timeout,
+                                  final @NotNull TimeUnit timeoutUnit) throws AgentLoadingException, InterruptedException {
+        final long endTime = timeout > 0 ? System.currentTimeMillis() + timeoutUnit.toMillis(timeout) : -1L;
         while (this.process().isAlive()) {
             if (!this.isReady()) {
+                if (endTime > 0 && System.currentTimeMillis() > endTime) {
+                    throw new AgentLoadingException("Agent failed to load within the specified timeout");
+                }
                 Thread.sleep(checkInterval);
                 continue;
             }
