@@ -54,6 +54,10 @@ abstract sealed class MinecraftTestStarterImpl<T extends RemotedAgent> implement
     private TimeUnit agentConnectTimeoutUnit = TimeUnit.SECONDS;
     private long gameReadyTimeout = 2L;
     private TimeUnit gameReadyTimeoutUnit = TimeUnit.MINUTES;
+    private long abortCloseTimeout = 5L;
+    private TimeUnit abortCloseTimeoutUnit = TimeUnit.SECONDS;
+
+    private Process process;
 
     @Override
     public @NotNull MinecraftTestStarter<T> config(final ProcessConfiguration.@NotNull Builder builder) {
@@ -91,6 +95,13 @@ abstract sealed class MinecraftTestStarterImpl<T extends RemotedAgent> implement
     }
 
     @Override
+    public @NotNull MinecraftTestStarter<T> abortCloseTimeout(final long timeout, final @NotNull TimeUnit unit) {
+        this.abortCloseTimeout = timeout;
+        this.abortCloseTimeoutUnit = Objects.requireNonNull(unit, "unit must not be null");
+        return this;
+    }
+
+    @Override
     public @NotNull StartedMinecraft<T> start() {
         Objects.requireNonNull(this.processConfigurationBuilder, "Process configuration must be defined before starting");
         Objects.requireNonNull(this.agentId, "Agent id must be defined before starting");
@@ -99,15 +110,18 @@ abstract sealed class MinecraftTestStarterImpl<T extends RemotedAgent> implement
         final String agentPath = this.getAgentPath().toString();
         final ProcessConfiguration config = this.processConfigurationBuilder.jvmAgentArg(agentPath, this.agentPort).build();
         final MinecraftHolder holder = RemotedMinecraft.run(config).getReadyFuture().join();
-        assumeTrue(holder.isStarted(), "Minecraft process failed to start");
+
+        this.process = holder.getProcess();
+
+        this.assumeTrue(holder.isStarted(), "Minecraft process failed to start");
 
         // Connect agent
         final MinecraftController<T> controller = holder.newController();
         try {
-            assumeTrue(controller.connect(this.agentId, this.agentPort, this.agentConnectTimeout, this.agentConnectTimeoutUnit),
+            this.assumeTrue(controller.connect(this.agentId, this.agentPort, this.agentConnectTimeout, this.agentConnectTimeoutUnit),
                     "Failed to connect to agent");
         } catch (final AgentConnectException e) {
-            throw new TestAbortedException("Failed to connect to agent", e);
+            throw this.andClose("Failed to connect to agent", e);
         }
 
         // Await game is ready (game menu)
@@ -115,22 +129,41 @@ abstract sealed class MinecraftTestStarterImpl<T extends RemotedAgent> implement
         try {
             agent = controller.awaitReady(this.gameReadyTimeout, this.gameReadyTimeoutUnit);
         } catch (final AgentLoadingException | InterruptedException e) {
-            throw new TestAbortedException("Game failed to start", e);
+            throw this.andClose("Game failed to start", e);
         }
 
+        // Ensure the agent is loaded
         try {
-            assumeTrue(agent.isLoaded(), "Agent failed to load");
+            this.assumeTrue(agent.isLoaded(), "Agent failed to load");
         } catch (final RemoteException e) {
-            throw new TestAbortedException("Agent failed to load", e);
+            throw this.andClose("Agent failed to load", e);
         }
 
         return new StartedMinecraft<>(holder, controller, agent);
     }
 
-    private static void assumeTrue(final boolean state, final String message) {
+    private void assumeTrue(final boolean state, final String message) {
         if (!state) {
-            throw new TestAbortedException(message);
+            throw this.andClose(new TestAbortedException(message));
         }
+    }
+
+    private RuntimeException andClose(final String message, final Throwable throwable) {
+        return this.andClose(new TestAbortedException(message, throwable));
+    }
+
+    private RuntimeException andClose(final RuntimeException exception) {
+        if (this.process != null) {
+            this.process.destroy();
+            if (this.process.onExit()
+                    .orTimeout(this.abortCloseTimeout, this.abortCloseTimeoutUnit)
+                    .thenApply(p -> !p.isAlive())
+                    .exceptionally(t -> true)
+                    .join()) {
+                this.process.destroyForcibly();
+            }
+        }
+        return exception;
     }
 
     protected abstract @NotNull Path getAgentPath();

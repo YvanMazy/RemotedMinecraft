@@ -69,6 +69,9 @@ public interface MinecraftTestStarter<T extends RemotedAgent> {
     @Contract("_, _ -> this")
     @NotNull MinecraftTestStarter<T> gameReadyTimeout(final long timeout, final @NotNull TimeUnit unit);
 
+    @Contract("_, _ -> this")
+    @NotNull MinecraftTestStarter<T> abortCloseTimeout(final long timeout, final @NotNull TimeUnit unit);
+
     @Contract("-> new")
     @NotNull StartedMinecraft<T> start();
 
