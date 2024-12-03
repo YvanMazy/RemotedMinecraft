@@ -92,6 +92,11 @@ public interface MinecraftController<T extends RemotedAgent> {
         return this.awaitReady(50L, -1L, TimeUnit.SECONDS);
     }
 
+    default @NotNull T awaitReady(final long timeout,
+                                  final @NotNull TimeUnit timeoutUnit) throws AgentLoadingException, InterruptedException {
+        return this.awaitReady(50L, timeout, timeoutUnit);
+    }
+
     @SuppressWarnings("BusyWait")
     default @NotNull T awaitReady(final long checkInterval,
                                   final long timeout,
