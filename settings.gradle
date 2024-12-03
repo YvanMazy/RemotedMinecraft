@@ -3,3 +3,5 @@ rootProject.name = 'RemotedMinecraft'
 if (System.getenv("JITPACK") == null) {
     include 'example'
 }
+
+include 'testing'
