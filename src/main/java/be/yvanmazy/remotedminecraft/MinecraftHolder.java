@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public interface MinecraftHolder {
 
@@ -54,6 +55,38 @@ public interface MinecraftHolder {
     @Contract(pure = true)
     default boolean isStarted() {
         return this.getState() == MinecraftState.STARTED;
+    }
+
+    default boolean destroy() {
+        return this.destroy(5L, TimeUnit.SECONDS, 1L, TimeUnit.SECONDS);
+    }
+
+    default boolean destroy(final long timeout, final @NotNull TimeUnit timeoutUnit) {
+        return this.destroy(timeout, timeoutUnit, 1L, TimeUnit.SECONDS);
+    }
+
+    default boolean destroy(final long timeout,
+                            final @NotNull TimeUnit timeoutUnit,
+                            final long forciblyTimeout,
+                            final @NotNull TimeUnit forciblyTimeoutUnit) {
+        final Process process = this.getProcess();
+        if (process == null) {
+            return false;
+        }
+
+        process.destroy();
+
+        try {
+            if (process.waitFor(timeout, timeoutUnit)) {
+                return true;
+            }
+
+            process.destroyForcibly();
+
+            return process.waitFor(forciblyTimeout, forciblyTimeoutUnit);
+        } catch (final InterruptedException ignored) {
+            return false;
+        }
     }
 
 }
