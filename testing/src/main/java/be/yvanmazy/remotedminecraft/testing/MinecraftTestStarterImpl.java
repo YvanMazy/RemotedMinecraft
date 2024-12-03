@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Range;
 import org.opentest4j.TestAbortedException;
 
 import java.nio.file.Path;
+import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +91,7 @@ abstract sealed class MinecraftTestStarterImpl<T extends RemotedAgent> implement
     }
 
     @Override
-    public @NotNull T start() {
+    public @NotNull StartedMinecraft<T> start() {
         Objects.requireNonNull(this.processConfigurationBuilder, "Process configuration must be defined before starting");
         Objects.requireNonNull(this.agentId, "Agent id must be defined before starting");
 
@@ -117,7 +118,13 @@ abstract sealed class MinecraftTestStarterImpl<T extends RemotedAgent> implement
             throw new TestAbortedException("Game failed to start", e);
         }
 
-        return agent;
+        try {
+            assumeTrue(agent.isLoaded(), "Agent failed to load");
+        } catch (final RemoteException e) {
+            throw new TestAbortedException("Agent failed to load", e);
+        }
+
+        return new StartedMinecraft<>(holder, controller, agent);
     }
 
     private static void assumeTrue(final boolean state, final String message) {

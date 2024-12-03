@@ -70,7 +70,7 @@ public interface MinecraftTestStarter<T extends RemotedAgent> {
     @NotNull MinecraftTestStarter<T> gameReadyTimeout(final long timeout, final @NotNull TimeUnit unit);
 
     @Contract("-> new")
-    @NotNull T start();
+    @NotNull StartedMinecraft<T> start();
 
     interface WithLocalAgent<T extends RemotedAgent> extends MinecraftTestStarter<T> {
 
