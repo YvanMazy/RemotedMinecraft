@@ -58,14 +58,16 @@ public interface MinecraftHolder {
     }
 
     default boolean destroy() {
-        return this.destroy(5L, TimeUnit.SECONDS, 1L, TimeUnit.SECONDS);
+        return this.destroy(20L, 3L, TimeUnit.SECONDS, 1L, TimeUnit.SECONDS);
     }
 
     default boolean destroy(final long timeout, final @NotNull TimeUnit timeoutUnit) {
-        return this.destroy(timeout, timeoutUnit, 1L, TimeUnit.SECONDS);
+        return this.destroy(20L, timeout, timeoutUnit, 1L, TimeUnit.SECONDS);
     }
 
-    default boolean destroy(final long timeout,
+    @SuppressWarnings("BusyWait")
+    default boolean destroy(final long checkInterval,
+                            final long timeout,
                             final @NotNull TimeUnit timeoutUnit,
                             final long forciblyTimeout,
                             final @NotNull TimeUnit forciblyTimeoutUnit) {
@@ -77,13 +79,22 @@ public interface MinecraftHolder {
         process.destroy();
 
         try {
-            if (process.waitFor(timeout, timeoutUnit)) {
-                return true;
+            boolean forcibly = false;
+            long endTime = timeout > 0 ? System.currentTimeMillis() + timeoutUnit.toMillis(timeout) : -1L;
+            while (process.isAlive()) {
+                if (endTime < 1 || System.currentTimeMillis() > endTime) {
+                    if (!forcibly) {
+                        forcibly = true;
+                        process.destroyForcibly();
+                        endTime = forciblyTimeout > 0 ? System.currentTimeMillis() + forciblyTimeoutUnit.toMillis(forciblyTimeout) : -1L;
+                        continue;
+                    }
+                    return false;
+                }
+                Thread.sleep(checkInterval);
             }
 
-            process.destroyForcibly();
-
-            return process.waitFor(forciblyTimeout, forciblyTimeoutUnit);
+            return true;
         } catch (final InterruptedException ignored) {
             return false;
         }
