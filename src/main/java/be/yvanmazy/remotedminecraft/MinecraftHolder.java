@@ -58,16 +58,14 @@ public interface MinecraftHolder {
     }
 
     default boolean destroy() {
-        return this.destroy(20L, 3L, TimeUnit.SECONDS, 1L, TimeUnit.SECONDS);
+        return this.destroy(3L, TimeUnit.SECONDS, 1L, TimeUnit.SECONDS);
     }
 
     default boolean destroy(final long timeout, final @NotNull TimeUnit timeoutUnit) {
-        return this.destroy(20L, timeout, timeoutUnit, 1L, TimeUnit.SECONDS);
+        return this.destroy(timeout, timeoutUnit, 1L, TimeUnit.SECONDS);
     }
 
-    @SuppressWarnings("BusyWait")
-    default boolean destroy(final long checkInterval,
-                            final long timeout,
+    default boolean destroy(final long timeout,
                             final @NotNull TimeUnit timeoutUnit,
                             final long forciblyTimeout,
                             final @NotNull TimeUnit forciblyTimeoutUnit) {
@@ -78,26 +76,11 @@ public interface MinecraftHolder {
 
         process.destroy();
 
-        try {
-            boolean forcibly = false;
-            long endTime = timeout > 0 ? System.currentTimeMillis() + timeoutUnit.toMillis(timeout) : -1L;
-            while (process.isAlive() || !process.onExit().isDone()) {
-                if (endTime < 1 || System.currentTimeMillis() > endTime) {
-                    if (!forcibly) {
-                        forcibly = true;
-                        process.destroyForcibly();
-                        endTime = forciblyTimeout > 0 ? System.currentTimeMillis() + forciblyTimeoutUnit.toMillis(forciblyTimeout) : -1L;
-                        continue;
-                    }
-                    return false;
-                }
-                Thread.sleep(checkInterval);
-            }
-
-            return true;
-        } catch (final InterruptedException ignored) {
-            return false;
+        if (process.onExit().orTimeout(timeout, timeoutUnit).thenApply(p -> false).exceptionally(t -> true).join()) {
+            process.destroyForcibly();
+            return process.onExit().orTimeout(forciblyTimeout, forciblyTimeoutUnit).thenApply(p -> true).exceptionally(t -> false).join();
         }
+        return true;
     }
 
 }
