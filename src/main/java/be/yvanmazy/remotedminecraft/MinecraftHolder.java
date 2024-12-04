@@ -81,7 +81,7 @@ public interface MinecraftHolder {
         try {
             boolean forcibly = false;
             long endTime = timeout > 0 ? System.currentTimeMillis() + timeoutUnit.toMillis(timeout) : -1L;
-            while (process.isAlive()) {
+            while (process.isAlive() || !process.onExit().isDone()) {
                 if (endTime < 1 || System.currentTimeMillis() > endTime) {
                     if (!forcibly) {
                         forcibly = true;

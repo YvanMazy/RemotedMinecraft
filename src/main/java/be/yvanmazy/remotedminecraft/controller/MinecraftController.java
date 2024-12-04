@@ -51,7 +51,7 @@ public interface MinecraftController<T extends RemotedAgent> {
     default boolean connect(final @NotNull String id,
                             final int port,
                             final long timeout,
-                            final TimeUnit timeUnit) throws AgentConnectException {
+                            final @NotNull TimeUnit timeUnit) throws AgentConnectException {
         return this.connect(id, port, timeout, timeUnit, 100L);
     }
 
@@ -59,7 +59,7 @@ public interface MinecraftController<T extends RemotedAgent> {
     default boolean connect(final @NotNull String id,
                             final int port,
                             final long timeout,
-                            final TimeUnit timeUnit,
+                            final @NotNull TimeUnit timeUnit,
                             final long checkInterval) throws AgentConnectException {
         final long endTime = System.currentTimeMillis() + timeUnit.toMillis(timeout);
 
