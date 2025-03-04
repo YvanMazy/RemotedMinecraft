@@ -32,9 +32,10 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -43,10 +44,11 @@ import java.util.jar.Manifest;
 public final class AgentFileBuilder {
 
     private final Class<?> mainClass;
-    private final List<Class<?>> classes = new ArrayList<>();
+    private final Set<Class<?>> classes = new HashSet<>();
 
     public AgentFileBuilder(final @NotNull Class<?> mainClass) {
         this.mainClass = Objects.requireNonNull(mainClass, "mainClass must not be null");
+        this.classes.add(mainClass);
     }
 
     @Contract("_ -> this")
@@ -101,7 +103,6 @@ public final class AgentFileBuilder {
     @Contract("_ -> new")
     public @NotNull Path build(final @NotNull Path path) throws IOException {
         try (final JarOutputStream out = new JarOutputStream(Files.newOutputStream(path))) {
-            addClassToJar(out, this.mainClass);
             for (final Class<?> clazz : this.classes) {
                 addClassToJar(out, clazz);
             }
