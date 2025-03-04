@@ -24,6 +24,7 @@
 
 package be.yvanmazy.remotedminecraft.controller.agent;
 
+import be.yvanmazy.remotedminecraft.util.ClassUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,10 +33,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -59,8 +57,43 @@ public final class AgentFileBuilder {
 
     @Contract("_ -> this")
     public @NotNull AgentFileBuilder addClasses(final @NotNull Class<?> @NotNull ... classes) {
-        this.classes.addAll(List.of(classes));
+        return this.addClasses(List.of(classes));
+    }
+
+    @Contract("_ -> this")
+    public @NotNull AgentFileBuilder addClasses(final @NotNull Collection<Class<?>> classes) {
+        this.classes.addAll(classes);
         return this;
+    }
+
+    @Contract("_ -> this")
+    public @NotNull AgentFileBuilder addPackage(final @NotNull String packageName) {
+        return this.addPackage(packageName, -1);
+    }
+
+    @Contract("_, _ -> this")
+    public @NotNull AgentFileBuilder addPackage(final @NotNull String packageName, final int maxDepth) {
+        try {
+            return this.addClasses(ClassUtil.getClasses(packageName, maxDepth));
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Contract("_, _ -> this")
+    public @NotNull AgentFileBuilder addPackage(final @NotNull ClassLoader classLoader, final @NotNull String packageName) {
+        return this.addPackage(classLoader, packageName, -1);
+    }
+
+    @Contract("_, _, _ -> this")
+    public @NotNull AgentFileBuilder addPackage(final @NotNull ClassLoader classLoader,
+                                                final @NotNull String packageName,
+                                                final int maxDepth) {
+        try {
+            return this.addClasses(ClassUtil.getClasses(classLoader, packageName, maxDepth));
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Contract("-> this")
